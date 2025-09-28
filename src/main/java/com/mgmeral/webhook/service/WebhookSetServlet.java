@@ -1,4 +1,4 @@
-package com.infina.webhook.service;
+package com.mgmeral.webhook.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
