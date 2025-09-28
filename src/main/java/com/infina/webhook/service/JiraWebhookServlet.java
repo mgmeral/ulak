@@ -19,10 +19,8 @@ import java.io.IOException;
 @WebServlet("/jira-webhook")
 public class JiraWebhookServlet extends HttpServlet {
 
-    private static final String TEAMS_WEBHOOK_URL = "<TEAMS>";
-
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         StringBuilder jsonBuffer = new StringBuilder();
 
         try (BufferedReader reader = req.getReader()) {
@@ -50,8 +48,7 @@ public class JiraWebhookServlet extends HttpServlet {
                     : "Unknown user";
 
             String message = String.format(event.getTemplate(), issueKey, summary, displayName);
-
-            sendToTeams(message);
+            sendToTeams(message, "name");
             resp.setStatus(HttpServletResponse.SC_OK);
 
         } catch (Exception e) {
@@ -67,9 +64,10 @@ public class JiraWebhookServlet extends HttpServlet {
         resp.getWriter().write("Lütfen POST isteği gönderin. GET desteklenmiyor.");
     }
 
-    private void sendToTeams(String messageText) {
+    private void sendToTeams(String messageText, String name) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost post = new HttpPost(TEAMS_WEBHOOK_URL);
+            String url = WebhookUrlCache.get(name);
+            HttpPost post = new HttpPost(url);
             post.setHeader("Content-Type", "application/json");
 
             String payload = String.format("{\"text\":\"%s\"}", escapeJson(messageText));
