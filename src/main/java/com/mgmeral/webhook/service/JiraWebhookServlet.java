@@ -1,8 +1,8 @@
-package com.infina.webhook.service;
+package com.mgmeral.webhook.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.infina.webhook.service.enums.JiraEventEnum;
+import com.mgmeral.webhook.service.enums.JiraEventEnum;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

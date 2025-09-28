@@ -1,4 +1,4 @@
-package com.infina.webhook.service.enums;
+package com.mgmeral.webhook.service.enums;
 
 public enum EventCategory {
     ISSUE,

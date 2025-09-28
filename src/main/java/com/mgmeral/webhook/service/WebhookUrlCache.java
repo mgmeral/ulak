@@ -1,4 +1,4 @@
-package com.infina.webhook.service;
+package com.mgmeral.webhook.service;
 
 import java.util.HashMap;
 import java.util.Map;

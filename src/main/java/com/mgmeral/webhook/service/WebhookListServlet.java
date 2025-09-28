@@ -1,4 +1,4 @@
-package com.infina.webhook.service;
+package com.mgmeral.webhook.service;
 
 
 import jakarta.servlet.annotation.WebServlet;
