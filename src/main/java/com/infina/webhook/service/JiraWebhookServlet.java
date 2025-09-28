@@ -47,8 +47,10 @@ public class JiraWebhookServlet extends HttpServlet {
                     ? user.get("displayName").getAsString()
                     : "Unknown user";
 
+            String name = req.getParameter("name");
+
             String message = String.format(event.getTemplate(), issueKey, summary, displayName);
-            sendToTeams(message, "name");
+            sendToTeams(message, name);
             resp.setStatus(HttpServletResponse.SC_OK);
 
         } catch (Exception e) {

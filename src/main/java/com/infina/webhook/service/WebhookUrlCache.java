@@ -3,7 +3,7 @@ package com.infina.webhook.service;
 import java.util.HashMap;
 
 public class WebhookUrlCache {
-    private static HashMap<String, String> webhookUrls;
+    private static HashMap<String, String> webhookUrls = new HashMap<>();;
 
     private WebhookUrlCache() {
     }
