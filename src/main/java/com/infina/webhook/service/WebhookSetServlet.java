@@ -2,6 +2,7 @@ package com.infina.webhook.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,5 +30,12 @@ public class WebhookSetServlet extends HttpServlet {
 
         WebhookUrlCache.set(name, url);
         resp.getWriter().write("Webhook URL set edildi: " + url);
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        resp.getWriter().write("Lütfen POST isteği gönderin. GET desteklenmiyor.");
     }
 }
