@@ -2,6 +2,7 @@ package com.infina.webhook.service;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.infina.webhook.service.enums.JiraEventEnum;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -17,12 +18,13 @@ import java.io.IOException;
 
 @WebServlet("/jira-webhook")
 public class JiraWebhookServlet extends HttpServlet {
-    private static final String TEAMS_WEBHOOK_URL = "https://outlook.office.com/webhook/xxx";
+
+    private static final String TEAMS_WEBHOOK_URL = "<TEAMS>";
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Body oku
         StringBuilder jsonBuffer = new StringBuilder();
+
         try (BufferedReader reader = req.getReader()) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -30,15 +32,32 @@ public class JiraWebhookServlet extends HttpServlet {
             }
         }
 
-        JsonObject body = JsonParser.parseString(jsonBuffer.toString()).getAsJsonObject();
-        JsonObject issue = body.getAsJsonObject("issue");
-        String issueKey = issue.get("key").getAsString();
-        String summary = issue.getAsJsonObject("fields").get("summary").getAsString();
+        try {
+            JsonObject body = JsonParser.parseString(jsonBuffer.toString()).getAsJsonObject();
 
-        String message = String.format("📢 Issue `%s - %s` güncellendi!", issueKey, summary);
+            String incomingEvent = body.has("webhookEvent") ? body.get("webhookEvent").getAsString() : "unknown";
+            JiraEventEnum event = JiraEventEnum.from(incomingEvent);
 
-        sendToTeams(message);
-        resp.setStatus(200);
+            JsonObject issue = body.has("issue") ? body.getAsJsonObject("issue") : null;
+            String issueKey = issue != null && issue.has("key") ? issue.get("key").getAsString() : "N/A";
+            String summary = issue != null && issue.has("fields") && issue.getAsJsonObject("fields").has("summary")
+                    ? issue.getAsJsonObject("fields").get("summary").getAsString()
+                    : "No summary";
+
+            JsonObject user = body.has("user") ? body.getAsJsonObject("user") : null;
+            String displayName = user != null && user.has("displayName")
+                    ? user.get("displayName").getAsString()
+                    : "Unknown user";
+
+            String message = String.format(event.getTemplate(), issueKey, summary, displayName);
+
+            sendToTeams(message);
+            resp.setStatus(HttpServletResponse.SC_OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
@@ -47,12 +66,13 @@ public class JiraWebhookServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         resp.getWriter().write("Lütfen POST isteği gönderin. GET desteklenmiyor.");
     }
+
     private void sendToTeams(String messageText) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost post = new HttpPost(TEAMS_WEBHOOK_URL);
             post.setHeader("Content-Type", "application/json");
 
-            String payload = String.format("{\"text\":\"%s\"}", messageText);
+            String payload = String.format("{\"text\":\"%s\"}", escapeJson(messageText));
             post.setEntity(new StringEntity(payload, "UTF-8"));
 
             client.execute(post);
@@ -61,4 +81,9 @@ public class JiraWebhookServlet extends HttpServlet {
         }
     }
 
+    private String escapeJson(String text) {
+        return text.replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r");
+    }
 }
