@@ -1,6 +1,7 @@
 package com.infina.webhook.service;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class WebhookUrlCache {
     private static HashMap<String, String> webhookUrls = new HashMap<>();;
@@ -19,4 +20,9 @@ public class WebhookUrlCache {
     public static boolean isSet(String name) {
         return webhookUrls.containsKey(name);
     }
+
+    public static Map<String, String> getAll() {
+        return webhookUrls;
+    }
+
 }

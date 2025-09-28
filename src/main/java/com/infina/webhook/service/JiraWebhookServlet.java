@@ -58,13 +58,13 @@ public class JiraWebhookServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         resp.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         resp.getWriter().write("Lütfen POST isteği gönderin. GET desteklenmiyor.");
     }
+
 
     private void sendToTeams(String messageText, String name) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {

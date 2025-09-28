@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Webhook Yönetimi</title>
+</head>
+<body>
+<h2>Tanımlı Webhook’lar</h2>
+<table border="1">
+    <thead>
+    <tr>
+        <th>Kanal Adı</th>
+        <th>Webhook URL (Masked)</th>
+        <th>İşlem</th>
+    </tr>
+    </thead>
+    <tbody id="webhookTableBody">
+    </tbody>
+</table>
+
+<script>
+    async function fetchWebhooks() {
+        const response = await fetch('/list-webhooks');
+        const data = await response.json();
+        const tbody = document.getElementById('webhookTableBody');
+        tbody.innerHTML = '';
+
+        for (const item of data) {
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            const urlCell = document.createElement('td');
+            const actionCell = document.createElement('td');
+
+            nameCell.textContent = item.name;
+
+            const maskedUrl = maskUrl(item.url);
+            urlCell.textContent = maskedUrl;
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Düzenle';
+            editButton.onclick = () => startEdit(row, item.name, item.url);
+            actionCell.appendChild(editButton);
+
+            row.appendChild(nameCell);
+            row.appendChild(urlCell);
+            row.appendChild(actionCell);
+            tbody.appendChild(row);
+        }
+    }
+
+    function maskUrl(url) {
+        if (!url || url.length < 10) return '*****';
+        return url.replace(/^(.{6}).*(.{4})$/, '$1****$2');
+    }
+
+    function startEdit(row, name, originalUrl) {
+        row.innerHTML = '';
+
+        const nameCell = document.createElement('td');
+        nameCell.textContent = name;
+
+        const urlCell = document.createElement('td');
+        const urlInput = document.createElement('input');
+        urlInput.type = 'text';
+        urlInput.value = originalUrl;
+        urlCell.appendChild(urlInput);
+
+        const actionCell = document.createElement('td');
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Kaydet';
+        saveBtn.onclick = async () => {
+            const newUrl = urlInput.value.trim();
+            if (!newUrl) return alert('URL boş olamaz!');
+
+            const response = await fetch("/set-webhook", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, url: newUrl })
+            });
+
+            if (response.ok) {
+                fetchWebhooks(); // Refresh table
+            } else {
+                alert("Kaydetme başarısız oldu.");
+            }
+        };
+        actionCell.appendChild(saveBtn);
+
+        row.appendChild(nameCell);
+        row.appendChild(urlCell);
+        row.appendChild(actionCell);
+    }
+
+    // Sayfa açıldığında
+    fetchWebhooks();
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Webhook Ayarla</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 30px;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            background: #f9f9f9;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #2b7de9;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a5dc1;
+        }
+        .result {
+            font-weight: bold;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Teams Webhook Bağlantısı Ayarla</h2>
+
+<label for="name">Kanal Adı</label>
+<input type="text" id="name" placeholder="örn: urun-takimi">
+
+<label for="url">Teams Webhook URL</label>
+<input type="text" id="url" placeholder="https://...webhook.office.com/...">
+
+<button onclick="submitWebhook()">Gönder</button>
+
+<div class="result" id="result"></div>
+<script>
+    async function submitWebhook() {
+        const name = document.getElementById("name").value.trim();
+        const url = document.getElementById("url").value.trim();
+
+        if (!name || !url) {
+            alert("Lütfen tüm alanları doldurun.");
+            return;
+        }
+
+        const response = await fetch("/set-webhook", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name, url })
+        });
+
+        const text = await response.text();
+        document.getElementById("result").textContent = text;
+    }
+</script>
+</body>
+</html>
